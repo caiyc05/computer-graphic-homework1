@@ -19,22 +19,16 @@ public:
     Vector3f color;
     void draw(Image &img) override {
         // TODO: Implement Bresenham Algorithm
-        int dx = xB - xA;
-        int dy = yB - yA;
+        float dx = xB - xA;
+        float dy = yB - yA;
         bool steep = (abs(dx) >= abs(dy));
         if(!steep){
             //说明斜率绝对值大于1，交换x,y
-            int storeA = xA;
-            xA = yA;
-            yA = storeA;
-
-            int storeB = xB;
-            xB = yB;
-            yB = storeB;
-
-            dx = xB - xA;
-            dy = yB - yA;
+            std::swap(xA,yA);
+            std::swap(xB,yB);
+            std::swap(dx,dy);
         }
+        // dy/dx > 1/2 --> 2dy-dx >0 --> e = 2*dx*d 
         float d = 0;
         int x = xA;
         int y = yA;
@@ -71,12 +65,26 @@ public:
     void draw(Image &img) override {
         // TODO: Implement Algorithm to draw a Circle
         float d = 1.25 - radius;
-        int x = cx;
-        int y = cy+radius;
-        img.SetPixel(x,y,color);
-        img.SetPixel(x,-y,color);
-        img.SetPixel(-x,y,color);
-        img.SetPixel(-x,-y,color);
+        //先进行原点偏移，考虑在0点处画圆，然后再进行偏移
+        int x = 0;
+        int y = radius;
+        Vector3f img_color = img.GetPixel(x,y);
+        if(x+cx >= 0 && x+cx < img.Width() && y+cy >= 0 && y+cy < img.Height()) 
+            img.SetPixel(x+cx, y+cy, color);
+        if(-x+cx >= 0 && -x+cx < img.Width() && y+cy >= 0 && y+cy < img.Height())
+            img.SetPixel(-x+cx, y+cy, color);
+        if(x+cx >= 0 && x+cx < img.Width() && -y+cy >= 0 && -y+cy < img.Height())
+            img.SetPixel(x+cx, -y+cy, color);
+        if(-x+cx >= 0 && -x+cx < img.Width() && -y+cy >= 0 && -y+cy < img.Height())
+            img.SetPixel(-x+cx, -y+cy, color);
+        if(y+cx >= 0 && y+cx < img.Width() && x+cy >= 0 && x+cy < img.Height())
+            img.SetPixel(y+cx, x+cy, color);
+        if(-y+cx >= 0 && -y+cx < img.Width() && x+cy >= 0 && x+cy < img.Height())
+            img.SetPixel(-y+cx, x+cy, color);
+        if(y+cx >= 0 && y+cx < img.Width() && -x+cy >= 0 && -x+cy < img.Height())
+            img.SetPixel(y+cx, -x+cy, color);
+        if(-y+cx >= 0 && -y+cx < img.Width() && -x+cy >= 0 && -x+cy < img.Height())
+            img.SetPixel(-y+cx, -x+cy, color);
         while(x <= y){
             if(d<0){
                 d += 2*x + 3;
@@ -86,10 +94,22 @@ public:
                 y--;
             }
             x++;
-            img.SetPixel(x,y,color);
-            img.SetPixel(x,-y,color);
-            img.SetPixel(-x,y,color);
-            img.SetPixel(-x,-y,color);
+            if(x+cx >= 0 && x+cx < img.Width() && y+cy >= 0 && y+cy < img.Height()) 
+            img.SetPixel(x+cx, y+cy, color);
+            if(-x+cx >= 0 && -x+cx < img.Width() && y+cy >= 0 && y+cy < img.Height())
+                img.SetPixel(-x+cx, y+cy, color);
+            if(x+cx >= 0 && x+cx < img.Width() && -y+cy >= 0 && -y+cy < img.Height())
+                img.SetPixel(x+cx, -y+cy, color);
+            if(-x+cx >= 0 && -x+cx < img.Width() && -y+cy >= 0 && -y+cy < img.Height())
+                img.SetPixel(-x+cx, -y+cy, color);
+            if(y+cx >= 0 && y+cx < img.Width() && x+cy >= 0 && x+cy < img.Height())
+                    img.SetPixel(y+cx, x+cy, color);
+            if(-y+cx >= 0 && -y+cx < img.Width() && x+cy >= 0 && x+cy < img.Height())
+                img.SetPixel(-y+cx, x+cy, color);
+            if(y+cx >= 0 && y+cx < img.Width() && -x+cy >= 0 && -x+cy < img.Height())
+                img.SetPixel(y+cx, -x+cy, color);
+            if(-y+cx >= 0 && -y+cx < img.Width() && -x+cy >= 0 && -x+cy < img.Height())
+                img.SetPixel(-y+cx, -x+cy, color);
         }
         printf("Draw a circle with center (%d, %d) and radius %d using color (%f, %f, %f)\n", cx, cy, radius,
                color.x(), color.y(), color.z());
