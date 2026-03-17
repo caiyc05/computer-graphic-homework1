@@ -96,6 +96,12 @@ public:
     }
 };
 
+struct seed
+{
+    int x;
+    int y;
+};
+
 class Fill : public Element {
 
 public:
@@ -103,7 +109,73 @@ public:
     Vector3f color;
     void draw(Image &img) override {
         // TODO: Flood fill
+        int xl,xr;
+        std::queue<seed> seedList;
+        seed p;
+        p.x = cx;
+        p.y = cy;
+        seedList.push(p);
+        //获得起始点的颜色
+        Vector3f oldColor = img.GetPixel(cx,cy);
+        while(!seedList.empty()){
+            seed pt = seedList.front();
+            seedList.pop();
+            int x = pt.x;
+            int y = pt.y;
+            //向右填充
+            while(img.GetPixel(x,y) == oldColor){
+                img.SetPixel(x,y,color);
+                x++;
+            }
+            xr = x-1;
 
+            //向左填充
+            x = pt.x - 1;
+            while(img.GetPixel(x,y) == oldColor){
+                img.SetPixel(x,y,color);
+                x++;
+            }
+            xl = x+1;
+
+            //处理[xl,xr]范围内的上下两条扫描线
+
+            //处理上面的扫描线,判断是否要进行填充,注意：有可能要填充的部分不是连续的，可能是分片的
+            y++;
+            while(x<=xr){
+                bool spanNeedFill = false;
+                while(img.GetPixel(x,y) == oldColor){
+                    spanNeedFill = true;
+                    x++;
+                }
+                if(spanNeedFill){
+                    //说明该分片有需要填充的部分
+                    seedList.push({x-1,y});
+                }
+                //找到下一个需要填充的点
+                while(img.GetPixel(x,y) != oldColor && x<=xr){
+                    x++;
+                }
+            }
+
+            //处理下面的扫描线
+            y -= 2;
+            x = xl;
+            while(x<=xr){
+                bool spanNeedFill = false;
+                while(img.GetPixel(x,y) == oldColor){
+                    spanNeedFill = true;
+                    x++;
+                }
+                if(spanNeedFill){
+                    //说明该分片有需要填充的部分
+                    seedList.push({x-1,y});
+                }
+                //找到下一个需要填充的点
+                while(img.GetPixel(x,y) != oldColor && x<=xr){
+                    x++;
+                }
+            }
+        } 
         printf("Flood fill source point = (%d, %d) using color (%f, %f, %f)\n", cx, cy,
                 color.x(), color.y(), color.z());
     }
