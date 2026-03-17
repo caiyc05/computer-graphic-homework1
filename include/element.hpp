@@ -117,13 +117,17 @@ public:
         seedList.push(p);
         //获得起始点的颜色
         Vector3f oldColor = img.GetPixel(cx,cy);
+        if (oldColor == color) 
+        {
+            return;
+        }
         while(!seedList.empty()){
             seed pt = seedList.front();
             seedList.pop();
             int x = pt.x;
             int y = pt.y;
             //向右填充
-            while(img.GetPixel(x,y) == oldColor){
+            while(x < img.Width() && img.GetPixel(x,y) == oldColor){
                 img.SetPixel(x,y,color);
                 x++;
             }
@@ -131,9 +135,9 @@ public:
 
             //向左填充
             x = pt.x - 1;
-            while(img.GetPixel(x,y) == oldColor){
+            while(x >= 0 && img.GetPixel(x,y) == oldColor){
                 img.SetPixel(x,y,color);
-                x++;
+                x--;
             }
             xl = x+1;
 
@@ -141,18 +145,19 @@ public:
 
             //处理上面的扫描线,判断是否要进行填充,注意：有可能要填充的部分不是连续的，可能是分片的
             y++;
-            while(x<=xr){
+            x = xl;
+            while(x<img.Width() && x<=xr && y < img.Height()){
                 bool spanNeedFill = false;
-                while(img.GetPixel(x,y) == oldColor){
+                while(x < img.Width() && img.GetPixel(x,y) == oldColor){
                     spanNeedFill = true;
                     x++;
                 }
                 if(spanNeedFill){
-                    //说明该分片有需要填充的部分
+                    //说明该分片有需要填充的部分,填充区间段最右边的未填充点
                     seedList.push({x-1,y});
                 }
-                //找到下一个需要填充的点
-                while(img.GetPixel(x,y) != oldColor && x<=xr){
+                //找到下一个需要填充的区段
+                while(x < img.Width() &&  img.GetPixel(x,y) != oldColor && x<=xr){
                     x++;
                 }
             }
@@ -160,9 +165,9 @@ public:
             //处理下面的扫描线
             y -= 2;
             x = xl;
-            while(x<=xr){
+            while(x<=xr && y >= 0 ){
                 bool spanNeedFill = false;
-                while(img.GetPixel(x,y) == oldColor){
+                while(x<img.Width() && img.GetPixel(x,y) == oldColor && x<=xr){
                     spanNeedFill = true;
                     x++;
                 }
@@ -171,7 +176,7 @@ public:
                     seedList.push({x-1,y});
                 }
                 //找到下一个需要填充的点
-                while(img.GetPixel(x,y) != oldColor && x<=xr){
+                while(x<img.Width() && img.GetPixel(x,y) != oldColor && x<=xr){
                     x++;
                 }
             }
